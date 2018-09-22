@@ -1,0 +1,25 @@
+Для создание таблиц и дополнительных функций необходимо исполнить файл:
+	
+	create_cities_and_airports.sql	
+	
+	Пример: sudo -u postgres psql -d airflights -f create_cities_and_airports.sql
+
+	P.S. перед запуском необходимо поменять путь до ваших csv файлов в скрипте  		 	 create_cities_and_airports.sql	
+
+INSERT-скрипты:
+	insert_airports_pgbench.sql
+	insert_cities_pgbench.sql
+
+SELECT-скрипты:
+	select_airports_pgbench.sql
+	select_cities_pgbench.sql
+
+Пример запуска pgbench в консоли:
+
+	sudo -u postgres pgbench -f insert_cities_pgbench.sql-T 30 airflights
+
+	sudo -u postgres pgbench -f insert_airports_pgbench.sql -T 180 airflights
+
+	sudo -u postgres pgbench -f [НАЗВАНИЕ ФАЙЛА-СКРИПТА] -T [ВРЕМЯ В СЕКУНДАХ СКОЛЬКО БУДЕТ РАБОТАТЬ СКРИПТ] [НАЗВАНИЕ БД]
+
+Подробная информация про pgbench - https://www.postgresql.org/docs/10/static/pgbench.html
