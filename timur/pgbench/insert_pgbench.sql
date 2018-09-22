@@ -1,0 +1,1 @@
+SELECT * FROM reservation WHERE pk = md5(random_string(40))
