@@ -53,20 +53,20 @@ if __name__ == '__main__':
     }
     conn = DbConnection(connection_parameters).get_conn()
     count = int(args.insert_count)
-    #
-    # try:
-    #     with conn.cursor() as cursor:
-    #         cursor.execute(
-    #             """CREATE TABLE if not exists flight_data (id serial primary key,data jsonb);""")
-    #         while count > 0:
-    #             cursor.execute("""INSERT INTO flight_data (data) VALUES ('{}');""".format(
-    #                 json.dumps(random_flight_data())
-    #             ))
-    #             count -= 1
-    #     sys.stdout.write('Created database environment successfully.\n')
-    # except psycopg2.Error:
-    #     raise SystemExit(
-    #         'Failed to setup Postgres environment.\n{0}'.format(sys.exc_info())
-    #     )
-    # finally:
-    #     conn.close()
+    
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                """CREATE TABLE if not exists flight_data (id serial primary key,data jsonb);""")
+            while count > 0:
+                cursor.execute("""INSERT INTO flight_data (data) VALUES ('{}');""".format(
+                    json.dumps(random_flight_data())
+                ))
+                count -= 1
+        sys.stdout.write('Created database environment successfully.\n')
+    except psycopg2.Error:
+        raise SystemExit(
+            'Failed to setup Postgres environment.\n{0}'.format(sys.exc_info())
+        )
+    finally:
+        conn.close()
