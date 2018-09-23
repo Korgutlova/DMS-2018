@@ -32,6 +32,8 @@ class Reservation(JsonSerializable):
     created_at: str
     tickets: Tuple[list, tuple] = []
 
+    __domains: tuple = ("hotmail.com", "gmail.com", "aol.com", "mail.com", "mail.kz", "yahoo.com")
+
     def return_md5(self, q, string: str):
         return q.put(hashlib.md5(string.encode('utf-8')).hexdigest())
 
@@ -39,8 +41,7 @@ class Reservation(JsonSerializable):
         super().__init__(*args, **kwargs)
         self.tickets = list(self.create_tickets(random.randrange(1, 5)))
         self.created_at = time.time()
-        e = map(lambda x: random.choices((string.ascii_lowercase))[0], range(3))
-        self.passenger = "{}@{}.{}".format(*e)
+        self.passenger = "{}@{}".format(self.get_random_string(N=10), random.choices(self.__domains)[0])
         q1 = Queue(); q2 = Queue()
         p1 = Process(target=self.return_md5, args=(q1, self.passenger))
         p2 = Process(target=self.return_md5, args=(q2, str(self.created_at)))
@@ -89,23 +90,10 @@ class User(JsonSerializable):
 
     __domains: tuple = ("hotmail.com", "gmail.com", "aol.com", "mail.com", "mail.kz", "yahoo.com")
 
-
-    def return_fn(self, q):
-        q.put(names.get_first_name())
-
-    def return_ln(self, q):
-        q.put(names.get_last_name())
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        q1 = Queue(); q2 = Queue()
-        p1 = Process(target=self.return_fn, args=(q1, ))
-        p2 = Process(target=self.return_ln, args=(q2, ))
-        p1.start(); p2.start();
-        p1.join()
-        self.first_name = q1.get()
-        p2.join()
-        self.last_name = q2.get()
+        self.first_name = self.get_random_string(10)
+        self.last_name = self.get_random_string(10)
         self.patronymic = ""
         self.email = "{}@{}".format(self.get_random_string(10, case=string.ascii_lowercase),
                                     random.choices(self.domains)[0])
