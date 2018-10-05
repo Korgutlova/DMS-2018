@@ -1,0 +1,1 @@
+INSERT INTO {keyspace}.{table} ({fields}) VALUES ({values});
