@@ -12,7 +12,7 @@ from generator import BuildCassandraSQL
 from cassandra.cluster import Cluster
 from cassandra.query import tuple_factory
 
-from multiprocessing import Pool, Process, Queue as Q
+from multiprocessing import Pool, Process, Queue as Q, Lock as L
 
 
 WORKERS = 2
@@ -67,16 +67,23 @@ class Bench:
                 for session_number in range(WORKERS):
                     SESSIONS[session_number] = self.connection_class(*args, **kwargs)
                     SESSIONS[session_number] = SESSIONS[session_number].connect(self.keyspace)
-                    #  SESSIONS[session_number].row_factory = tuple_factory
-
-                SESSIONS[0].execute("INSERT INTO test_keyspace.users (name, email) VALUES ('emailasassd', 'asdasd');")
+                    SESSIONS[session_number].cluster.shutdown()
+                    #  SESSIONS[session_number].session.shutdown()
         return SESSIONS
 
-    def run_bench(self, query, session):
-        print('RUNNING BENCH', session)
+    def run_bench(self, query, session, lock):
+        print('RUNNING BENCH. Session: #', session)
+        futures = []
+        counter = 0
         while True:
+            counter += 1
             query = self.generate_query()
-            result = session.execute_async(query)
+            futures.append(session.execute_async(query))
+
+            if counter % 20 == 0:
+                for f in futures:
+                    row = f.result()
+                    print(row)
 
 
     def generate_query(self, ):
@@ -89,13 +96,11 @@ class Bench:
             raise NotImplementedError("not implement")
         return query
 
-    def create_processes(self):
-        processes = []
+    def create_processes(self, lock):
         for process_no in range(WORKERS):
             p = Process(name=f"{process_no}", target=self.run_bench,
-                        args=(self.__query, self.sessions[process_no]), daemon=True)
+                        args=(self.__query, self.sessions[process_no], lock), daemon=True)
             p.start()
-            processes.append(p)
 
 
 if __name__ == "__main__":
@@ -103,7 +108,6 @@ if __name__ == "__main__":
     parser.add_argument('--file-name', '-f', required=True, nargs='?', help='file path of bench file')
     parser.add_argument('--time', nargs='?', required=True, type=int, help='time of bench')
     parser.add_argument('--pc', nargs='?', type=int, default=4, help='the count of processes')
-    parser.add_argument('--poolc', nargs='?', type=int, default=2, help='the count of pools')
 
     GLOBAL_SETTINGS = parser.parse_args()
     WORKERS = GLOBAL_SETTINGS.pc
@@ -114,8 +118,9 @@ if __name__ == "__main__":
                       'table_name': 'users',
                       'fields': ['email', 'name'],
                       'port': 9042,},
-                      'args': (['127.0.0.1', ],)})
+                      'args': (['localhost', ],)})
+    lock = L()
 
-    processes = bench.create_processes()
-    time.sleep(10)
+    processes = bench.create_processes(lock)
+    time.sleep(GLOBAL_SETTINGS.time)
     sys.exit()
