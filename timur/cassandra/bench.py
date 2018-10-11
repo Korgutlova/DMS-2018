@@ -67,7 +67,7 @@ class Bench:
                 for session_number in range(WORKERS):
                     SESSIONS[session_number] = self.connection_class(*args, **kwargs)
                     SESSIONS[session_number] = SESSIONS[session_number].connect(self.keyspace)
-                    SESSIONS[session_number].cluster.shutdown()
+                    # SESSIONS[session_number].cluster.shutdown()
                     #  SESSIONS[session_number].session.shutdown()
         return SESSIONS
 
