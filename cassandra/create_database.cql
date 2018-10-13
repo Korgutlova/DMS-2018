@@ -30,7 +30,7 @@ CREATE TYPE avia.ticket(
 CREATE TABLE avia.reservation(
     passenger varchar,
     date timestamp,
-    tickets list<frozen<ticket>>
+    tickets list<frozen<ticket>>,
     PRIMARY KEY (passenger, date)
 );
 
