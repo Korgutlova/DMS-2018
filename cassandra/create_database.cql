@@ -7,9 +7,9 @@ CREATE KEYSPACE avia
 
 CREATE TABLE avia.counter_reservations(
 	flight_number varchar,
-	tense timestamp,
+	-- tense timestamp,
 	amount_reservations counter,
-	PRIMARY KEY (flight_number, tense)
+	PRIMARY KEY (flight_number)
 );
 
 CREATE TYPE avia.passport(
