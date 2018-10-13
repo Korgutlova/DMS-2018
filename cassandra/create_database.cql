@@ -5,6 +5,7 @@ DROP KEYSPACE IF EXISTS avia;
 CREATE KEYSPACE avia 
 	WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 3};
 
+
 CREATE TABLE avia.airlines(
 	id uuid PRIMARY KEY,
 	name varchar,
@@ -65,6 +66,7 @@ CREATE TABLE avia.passengers(
 	password varchar
 );
 
+
 CREATE TABLE avia.counter_reservations(
 	flight_number varchar,
 	tense timestamp,
@@ -72,15 +74,31 @@ CREATE TABLE avia.counter_reservations(
 	PRIMARY KEY (flight_number, tense)
 );
 
-/*
-CREATE TABLE avia.reservation (
+CREATE TYPE avia.passport(
+	email varchar,
+	last_name varchar,
+	first_name varchar,
+	third_name varchar
+);
+
+CREATE TYPE avia.ticket(
+	type text,
+	place text,
+	price decimal, 
+	flight_no text,
+	passport_data passport,
+);
+
+CREATE TABLE avia.reservation(
+    passenger varchar,
+    date timestamp,
+    tickets list<ticket>
+    PRIMARY KEY (passenger, date)
+);
+
+/*CREATE TABLE avia.flight_data(
     pk varchar PRIMARY KEY,
     data text
 );
-
-CREATE TABLE avia.flight_data(
-    pk varchar PRIMARY KEY,
-    data text
-);
-
 */
+
