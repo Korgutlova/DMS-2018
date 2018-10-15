@@ -1,4 +1,4 @@
-.idea
+counter_app/.idea
 *.iml
 target
 **/*.properties
