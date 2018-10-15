@@ -114,6 +114,11 @@ public class App {
                 cqlStatement = String.format(updateCQL, 1, flight);
                 session.execute(cqlStatement);
             }
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
         cluster.close();
