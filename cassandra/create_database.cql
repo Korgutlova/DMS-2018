@@ -34,4 +34,15 @@ CREATE TABLE avia.reservation(
     PRIMARY KEY (passenger, date)
 );
 
+CREATE TABLE avia.flight_data(
+    time timestamp,
+    flight_number text,
+    speed decimal,
+    height decimal,
+    remaining_distance decimal,
+    temperature_overboard decimal,
+    engine_condition  text,
+    weather_condition text,
+    PRIMARY KEY (flight_number, time)
+);
 

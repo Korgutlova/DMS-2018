@@ -115,7 +115,7 @@ public class App {
                 session.execute(cqlStatement);
             }
             try {
-                Thread.sleep(200);
+                Thread.sleep(300);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
