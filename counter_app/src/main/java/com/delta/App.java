@@ -5,10 +5,7 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Random;
+import java.util.*;
 
 public class App {
 
@@ -36,6 +33,19 @@ public class App {
         setFlights = new ArrayList<String>();
         for (Row row : rs) {
             setFlights.add(row.getString("flight_number"));
+        }
+    }
+
+    private static void setToZeroCounters() {
+        final String selectCQL = "SELECT * FROM counter_reservations";
+        ResultSet rs = session.execute(selectCQL);
+        Map<String, Long> counters = new HashMap<String, Long>();
+        for (Row row : rs) {
+            counters.put(row.getString("flight_number"), row.getLong("amount_reservations"));
+        }
+
+        for (Map.Entry entry : counters.entrySet()) {
+            session.execute(String.format(updateCQL, -(Long) entry.getValue(), entry.getKey()));
         }
     }
 
@@ -101,7 +111,13 @@ public class App {
 
     public static void main(String[] args) {
 
+// Создание новых рейсов
 //        fillCounterReservations(10);
+
+// Обнуление бронирований - заказов
+//        setToZeroCounters();
+
+
         initFlights();
         String cqlStatement;
         HashMap<String, Object> maps;
@@ -115,7 +131,7 @@ public class App {
                 session.execute(cqlStatement);
             }
             try {
-                Thread.sleep(300);
+                Thread.sleep(400);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

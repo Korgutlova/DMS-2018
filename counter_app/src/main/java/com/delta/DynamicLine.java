@@ -22,21 +22,10 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
 
-/**
- * An example to show how we can create a dynamic chart.
- */
 public class DynamicLine extends ApplicationFrame implements ActionListener {
 
-    /**
-     * The time series data.
-     */
     private TimeSeries series;
-
-    /**
-     * The most recent value added.
-     */
     private long lastValue;
-
     private String selectCQL = "SELECT amount_reservations FROM counter_reservations WHERE flight_number='%s'";
     static private Session session;
 
@@ -54,12 +43,6 @@ public class DynamicLine extends ApplicationFrame implements ActionListener {
         return rs.one().getLong("amount_reservations");
     }
 
-    /**
-     * Constructs a new dynamic chart application.
-     *
-     * @param title  the frame title.
-     * @param flight
-     */
     public DynamicLine(final String title, String flight) {
 
         super(title);
@@ -76,7 +59,7 @@ public class DynamicLine extends ApplicationFrame implements ActionListener {
         timer.setInitialDelay(1000);
 
         //Sets background color of chart
-        chart.setBackgroundPaint(Color.LIGHT_GRAY);
+        chart.setBackgroundPaint(new Color(0x949FFF));
 
         //Created JPanel to show graph on screen
         final JPanel content = new JPanel(new BorderLayout());
@@ -97,12 +80,6 @@ public class DynamicLine extends ApplicationFrame implements ActionListener {
 
     }
 
-    /**
-     * Creates a sample chart.
-     *
-     * @param dataset the dataset.
-     * @return A sample chart.
-     */
     private JFreeChart createChart(final XYDataset dataset) {
         final JFreeChart result = ChartFactory.createTimeSeriesChart(
                 super.getTitle(),
@@ -136,11 +113,6 @@ public class DynamicLine extends ApplicationFrame implements ActionListener {
         return result;
     }
 
-    /**
-     * Generates an random entry for a particular call made by time for every 1/4th of a second.
-     *
-     * @param e the action event.
-     */
     public void actionPerformed(final ActionEvent e) {
 
         this.lastValue = getValueCounter();
@@ -151,15 +123,10 @@ public class DynamicLine extends ApplicationFrame implements ActionListener {
         System.out.println("Current Time in Milliseconds = " + now.toString() + ", Current Value : " + this.lastValue);
     }
 
-    /**
-     * Starting point for the dynamic graph application.
-     *
-     * @param args ignored.
-     */
     public static void main(final String[] args) {
 
         String flight = args.length > 0 ? args[0] : "CTAHE";
-        final DynamicLine demo = new DynamicLine("Purchased tickets for flights 'ABC-1'", flight);
+        final DynamicLine demo = new DynamicLine(String.format("Purchased tickets for flights '%s'", flight), flight);
         demo.pack();
         RefineryUtilities.centerFrameOnScreen(demo);
         demo.setVisible(true);
