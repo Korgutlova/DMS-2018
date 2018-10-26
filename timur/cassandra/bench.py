@@ -9,8 +9,10 @@ import multiprocessing
 import argparse
 from enum import Enum
 from generator import BuildCassandraSQL
+from cassandra import ConsistencyLevel
 from cassandra.cluster import Cluster
-from cassandra.query import tuple_factory
+from cassandra.query import tuple_factory, SimpleStatement
+from cassandra.concurrent import execute_concurrent
 
 from multiprocessing import Pool, Process, Queue as Q, Lock as L
 
@@ -18,6 +20,16 @@ from multiprocessing import Pool, Process, Queue as Q, Lock as L
 WORKERS = 2
 
 GLOBAL_SETTINGS = None
+
+COUNTER = 0
+
+def run_bench(p):
+    session = Cluster(("127.0.0.1", ))
+    session = session.connect("test_keyspace")
+    print('RUNNING BENCH. Session: #', session)
+    for i in range(1000):
+        query = SimpleStatement(Bench.s_generate_query(), consistency_level = ConsistencyLevel.ONE)
+        future_res = session.execute(query)
 
 
 class Database(Enum):
@@ -58,49 +70,43 @@ class Bench:
         self.__query = query
 
     def create_sessions(self, database, *args, **kwargs):
-        SESSIONS = [0] * WORKERS
-        if self.connection_class is not None:
-            if database == Database.CASSANDRA:
-                self.keyspace = kwargs.pop('keyspace', None)
-                self.table_name = kwargs.pop('table_name', None)
-                self.fields = kwargs.pop('fields', [])
-                for session_number in range(WORKERS):
-                    SESSIONS[session_number] = self.connection_class(*args, **kwargs)
-                    SESSIONS[session_number] = SESSIONS[session_number].connect(self.keyspace)
-                    SESSIONS[session_number].cluster.shutdown()
-                    #  SESSIONS[session_number].session.shutdown()
-        return SESSIONS
-
-    def run_bench(self, query, session, lock):
-        print('RUNNING BENCH. Session: #', session)
-        futures = []
-        counter = 0
-        while True:
-            counter += 1
-            query = self.generate_query()
-            futures.append(session.execute_async(query))
-
-            if counter % 20 == 0:
-                for f in futures:
-                    row = f.result()
-                    print(row)
+        pass
+        #  SESSIONS = [0] * WORKERS
+        #  if self.connection_class is not None:
+        #      if database == Database.CASSANDRA:
+        #          self.keyspace = kwargs.pop('keyspace', None)
+        #          self.table_name = kwargs.pop('table_name', None)
+        #          self.fields = kwargs.pop('fields', [])
+        #          for session_number in range(WORKERS):
+        #              SESSIONS[session_number] = self.connection_class(*args, **kwargs)
+        #              SESSIONS[session_number] = SESSIONS[session_number].connect(self.keyspace)
+        #              query = self.generate_query()
+        #              SESSIONS[session_number].execute(query)
+        #  return SESSIONS
 
 
-    def generate_query(self, ):
-        if self.database == Database.CASSANDRA:
-            query = self.__query.format(keyspace=self.keyspace,
-                                               table=self.table_name,
-                                               fields=", ".join(self.fields),
-                                               values=BuildCassandraSQL.generate_values())
-        else:
-            raise NotImplementedError("not implement")
+    @classmethod
+    def generate_query(cls, ):
+        query = "INSERT INTO {keyspace}.{table} ({fields}) VALUES ({values});".format(keyspace="test_keyspace",
+                                           table="users",
+                                           fields=", ".join(['name', 'email']),
+                                           values=BuildCassandraSQL.generate_values())
+        return query
+
+    @classmethod
+    def s_generate_query(cls, ):
+        char = "".join(random.choices(string.ascii_lowercase, k=10))
+        query = "SELECT * FROM {keyspace}.{table} WHERE {condition};".format(keyspace="test_keyspace",
+                                           table="users",
+                                           condition=f"email='{char}'")
         return query
 
     def create_processes(self, lock):
-        for process_no in range(WORKERS):
-            p = Process(name=f"{process_no}", target=self.run_bench,
-                        args=(self.__query, self.sessions[process_no], lock), daemon=True)
-            p.start()
+        p = Pool(WORKERS)
+        p.map(run_bench, range(WORKERS))
+        p.close()
+        p.join()
+        print('mapped')
 
 
 if __name__ == "__main__":
@@ -118,9 +124,12 @@ if __name__ == "__main__":
                       'table_name': 'users',
                       'fields': ['email', 'name'],
                       'port': 9042,},
-                      'args': (['localhost', ],)})
+                      'args': (['127.0.0.1',],)})
     lock = L()
 
+    r = time.time()
     processes = bench.create_processes(lock)
-    time.sleep(GLOBAL_SETTINGS.time)
-    sys.exit()
+    e = time.time()
+    print(f"Pools: {WORKERS}")
+    print(f'Executed 10000 queries each of workers')
+    print(WORKERS * 1000 / (e-r))

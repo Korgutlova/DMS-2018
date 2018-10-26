@@ -1,0 +1,1 @@
+SELECT * FROM {keyspace}.{table} WHERE {condition};
