@@ -23,12 +23,13 @@ GLOBAL_SETTINGS = None
 
 COUNTER = 0
 
+
 def run_bench(p):
     session = Cluster(("127.0.0.1", ))
     session = session.connect("test_keyspace")
     print('RUNNING BENCH. Session: #', session)
     for i in range(1000):
-        query = SimpleStatement(Bench.s_generate_query(), consistency_level = ConsistencyLevel.ONE)
+        query = SimpleStatement(Bench.s_generate_query(), consistency_level=ConsistencyLevel.ONE)
         future_res = session.execute(query)
 
 
@@ -45,8 +46,7 @@ class Bench:
 
     __CONNECTION_CLASS = None
 
-    BENCH_DIR =os.path.abspath(os.path.dirname(__file__))
-
+    BENCH_DIR = os.path.abspath(os.path.dirname(__file__))
 
     @property
     def query(self, ):
@@ -56,14 +56,14 @@ class Bench:
     def connection_class(self, ):
         return self.__CONNECTION_CLASS
 
-
     def __init__(self, file_name, database=Database.CASSANDRA, *args, **kwargs):
         self.database = database
         if database == Database.CASSANDRA:
             self.__CONNECTION_CLASS = Cluster
         self.bench_type = type
         self.get_query(file_name)
-        self.sessions = self.create_sessions(database, *kwargs.get('args'), **kwargs.get('settings'))
+        self.sessions = self.create_sessions(
+            database, *kwargs.get('args'), **kwargs.get('settings'))
 
     def get_query(self, file_name):
         query = open(os.path.join(self.BENCH_DIR, file_name), 'r').read()
@@ -84,21 +84,19 @@ class Bench:
         #              SESSIONS[session_number].execute(query)
         #  return SESSIONS
 
-
     @classmethod
     def generate_query(cls, ):
         query = "INSERT INTO {keyspace}.{table} ({fields}) VALUES ({values});".format(keyspace="test_keyspace",
-                                           table="users",
-                                           fields=", ".join(['name', 'email']),
-                                           values=BuildCassandraSQL.generate_values())
+                                                                                      table="users",
+                                                                                      fields=", ".join(['name', 'email']),
+                                                                                      values=BuildCassandraSQL.generate_values())
         return query
 
     @classmethod
     def s_generate_query(cls, ):
         char = "".join(random.choices(string.ascii_lowercase, k=10))
-        query = "SELECT * FROM {keyspace}.{table} WHERE {condition};".format(keyspace="test_keyspace",
-                                           table="users",
-                                           condition=f"email='{char}'")
+        query = "SELECT * FROM {keyspace}.{table} WHERE {condition};".format(
+            keyspace="test_keyspace", table="users", condition=f"email='{char}'")
         return query
 
     def create_processes(self, lock):
@@ -111,7 +109,12 @@ class Bench:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Benchmark database')
-    parser.add_argument('--file-name', '-f', required=True, nargs='?', help='file path of bench file')
+    parser.add_argument(
+        '--file-name',
+        '-f',
+        required=True,
+        nargs='?',
+        help='file path of bench file')
     parser.add_argument('--time', nargs='?', required=True, type=int, help='time of bench')
     parser.add_argument('--pc', nargs='?', type=int, default=4, help='the count of processes')
 
@@ -123,8 +126,8 @@ if __name__ == "__main__":
                       'keyspace': 'test_keyspace',
                       'table_name': 'users',
                       'fields': ['email', 'name'],
-                      'port': 9042,},
-                      'args': (['127.0.0.1',],)})
+                      'port': 9042, },
+                      'args': (['127.0.0.1', ],)})
     lock = L()
 
     r = time.time()
@@ -132,4 +135,4 @@ if __name__ == "__main__":
     e = time.time()
     print(f"Pools: {WORKERS}")
     print(f'Executed 10000 queries each of workers')
-    print(WORKERS * 1000 / (e-r))
+    print(WORKERS * 1000 / (e - r))

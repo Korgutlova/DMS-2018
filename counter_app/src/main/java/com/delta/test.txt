@@ -1,0 +1,3 @@
+INSERT INTO reservation (passenger, date, tickets) VALUES ('mail@gmail.com', toTimeStamp(now()),
+[{type:'1', place:'B-34', price:3.45, flight_number:'ABC-1', passport_data:{email:'mail@gmail.com', first_name:'Masha', last_name:'Volk', third_name:'Andreevna'}},
+{type:'2', place:'A-31', price:3.21, flight_number:'ABC-2', passport_data:{email:'dream@gmail.com', first_name:'Pasha', last_name:'Volfffk', third_name:'Andreev'}}]);
