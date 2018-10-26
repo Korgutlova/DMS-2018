@@ -14,13 +14,13 @@ CREATE TABLE avia.counter_reservations(
 
 CREATE TYPE avia.passport(
 	email varchar,
-	last_name varchar,
 	first_name varchar,
+	last_name varchar,
 	third_name varchar
 );
 
 CREATE TYPE avia.ticket(
-	type text,
+	type int,
 	place text,
 	price decimal, 
 	flight_number text,
@@ -31,7 +31,7 @@ CREATE TABLE avia.reservation(
     passenger varchar,
     date timestamp,
     tickets list<frozen<ticket>>,
-    PRIMARY KEY (passenger, date)
+    PRIMARY KEY ((passenger), date)
 );
 
 CREATE TABLE avia.flight_data(
@@ -46,3 +46,18 @@ CREATE TABLE avia.flight_data(
     PRIMARY KEY (flight_number, time)
 );
 
+
+INSERT INTO reservation (passenger, date, tickets ) VALUES ( 'pass1', toTimestamp(now()), [
+    {
+        type: 12,
+        place: 'asdasdasd',
+        price: 213.3,
+        flight_number: 'asdasd',
+        passport_data: {
+            email: 'asdasdas',
+            first_name: 'asdasdas',
+            last_name: 'asdasd',
+            third_name: 'asdasdasd'
+        }
+    }
+]);
